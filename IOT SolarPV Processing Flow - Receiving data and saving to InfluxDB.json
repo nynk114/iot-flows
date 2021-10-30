@@ -1,0 +1,367 @@
+[
+    {
+        "id": "4fa067ed3d4cde85",
+        "type": "tab",
+        "label": "IOT SolarPV Processing",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "7ded02b66061fb8e",
+        "type": "mqtt in",
+        "z": "4fa067ed3d4cde85",
+        "name": "",
+        "topic": "PVPanel",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "97e7b365de25de88",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "x": 140,
+        "y": 140,
+        "wires": [
+            [
+                "e428852c8baf795f"
+            ]
+        ]
+    },
+    {
+        "id": "e428852c8baf795f",
+        "type": "json",
+        "z": "4fa067ed3d4cde85",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": true,
+        "x": 330,
+        "y": 140,
+        "wires": [
+            [
+                "7021bdb02ab2a9bf",
+                "a4f69aaea0329850",
+                "788716dc1dac3ced",
+                "9d3f3f2d84fec975",
+                "7ff1befd5879201a",
+                "5844f59f290cc3ce",
+                "91070b9dcb6020d4",
+                "f50f584f469e3d5c"
+            ]
+        ]
+    },
+    {
+        "id": "538fc1e460c78146",
+        "type": "debug",
+        "z": "4fa067ed3d4cde85",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 990,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "7021bdb02ab2a9bf",
+        "type": "function",
+        "z": "4fa067ed3d4cde85",
+        "name": "Panel 1 Process",
+        "func": "var i = 0;\nmsg.payload={\n    ID_Battery:parseFloat(msg.payload.panels[i].ID_Battery),\n    Vol:parseFloat(msg.payload.panels[i].Total_Vol_BatteryGroup),\n    Current:parseFloat(msg.payload.panels[i].Current),\n    StateOfCharge:parseFloat(msg.payload.panels[i].SOC),\n    MosTemp:parseFloat(msg.payload.panels[i].MOS_temp),\n    MaxCellVoltage:parseFloat(msg.payload.panels[i].Max_Cell_Vol),\n    MinCellVoltage:parseFloat(msg.payload.panels[i].Min_Cell_Vol)\n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 200,
+        "wires": [
+            [
+                "538fc1e460c78146",
+                "e36ab3a5c45dcf6a"
+            ]
+        ]
+    },
+    {
+        "id": "a4f69aaea0329850",
+        "type": "function",
+        "z": "4fa067ed3d4cde85",
+        "name": "Panel 2 Process",
+        "func": "var i = 1;\nmsg.payload={\n    ID_Battery:parseFloat(msg.payload.panels[i].ID_Battery),\n    Vol:parseFloat(msg.payload.panels[i].Total_Vol_BatteryGroup),\n    Current:parseFloat(msg.payload.panels[i].Current),\n    StateOfCharge:parseFloat(msg.payload.panels[i].SOC),\n    MosTemp:parseFloat(msg.payload.panels[i].MOS_temp),\n    MaxCellVoltage:parseFloat(msg.payload.panels[i].Max_Cell_Vol),\n    MinCellVoltage:parseFloat(msg.payload.panels[i].Min_Cell_Vol)\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 240,
+        "wires": [
+            [
+                "538fc1e460c78146",
+                "87bf5c99533e2996"
+            ]
+        ]
+    },
+    {
+        "id": "788716dc1dac3ced",
+        "type": "function",
+        "z": "4fa067ed3d4cde85",
+        "name": "Panel 3 Process",
+        "func": "var i = 2;\nmsg.payload={\n    ID_Battery:parseFloat(msg.payload.panels[i].ID_Battery),\n    Vol:parseFloat(msg.payload.panels[i].Total_Vol_BatteryGroup),\n    Current:parseFloat(msg.payload.panels[i].Current),\n    StateOfCharge:parseFloat(msg.payload.panels[i].SOC),\n    MosTemp:parseFloat(msg.payload.panels[i].MOS_temp),\n    MaxCellVoltage:parseFloat(msg.payload.panels[i].Max_Cell_Vol),\n    MinCellVoltage:parseFloat(msg.payload.panels[i].Min_Cell_Vol)\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 280,
+        "wires": [
+            [
+                "538fc1e460c78146",
+                "d25957154861f5a9"
+            ]
+        ]
+    },
+    {
+        "id": "e36ab3a5c45dcf6a",
+        "type": "influxdb out",
+        "z": "4fa067ed3d4cde85",
+        "influxdb": "ea5fd531cab21ad5",
+        "name": "Save Panel 1",
+        "measurement": "Battery1",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "IOT_DEMO2",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 990,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "9d3f3f2d84fec975",
+        "type": "debug",
+        "z": "4fa067ed3d4cde85",
+        "name": "Raw Json Data",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 580,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "7ff1befd5879201a",
+        "type": "function",
+        "z": "4fa067ed3d4cde85",
+        "name": "Aggregate Data",
+        "func": "var i = 0;\nmsg.payload={\n    MinCurrent:parseFloat(msg.payload.aggregations.MinCurrent),\n    MaxCurrent:parseFloat(msg.payload.aggregations.MaxCurrent),\n    AverageCurrent:parseFloat(msg.payload.aggregations.Current),\n    MOS_Temperature:parseFloat(msg.payload.aggregations.MOS_Temp)\n    \n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 160,
+        "wires": [
+            [
+                "a7ace1c19ed1c17f"
+            ]
+        ]
+    },
+    {
+        "id": "5844f59f290cc3ce",
+        "type": "function",
+        "z": "4fa067ed3d4cde85",
+        "name": "Panel 4 Process",
+        "func": "var i = 3;\nmsg.payload={\n    ID_Battery:parseFloat(msg.payload.panels[i].ID_Battery),\n    Vol:parseFloat(msg.payload.panels[i].Total_Vol_BatteryGroup),\n    Current:parseFloat(msg.payload.panels[i].Current),\n    StateOfCharge:parseFloat(msg.payload.panels[i].SOC),\n    MosTemp:parseFloat(msg.payload.panels[i].MOS_temp),\n    MaxCellVoltage:parseFloat(msg.payload.panels[i].Max_Cell_Vol),\n    MinCellVoltage:parseFloat(msg.payload.panels[i].Min_Cell_Vol)\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 320,
+        "wires": [
+            [
+                "a2a25c7b4e4b7039"
+            ]
+        ]
+    },
+    {
+        "id": "91070b9dcb6020d4",
+        "type": "function",
+        "z": "4fa067ed3d4cde85",
+        "name": "Panel 5 Process",
+        "func": "var i = 4;\nmsg.payload={\n    ID_Battery:parseFloat(msg.payload.panels[i].ID_Battery),\n    Vol:parseFloat(msg.payload.panels[i].Total_Vol_BatteryGroup),\n    Current:parseFloat(msg.payload.panels[i].Current),\n    StateOfCharge:parseFloat(msg.payload.panels[i].SOC),\n    MosTemp:parseFloat(msg.payload.panels[i].MOS_temp),\n    MaxCellVoltage:parseFloat(msg.payload.panels[i].Max_Cell_Vol),\n    MinCellVoltage:parseFloat(msg.payload.panels[i].Min_Cell_Vol)\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 360,
+        "wires": [
+            [
+                "513822482887f395"
+            ]
+        ]
+    },
+    {
+        "id": "87bf5c99533e2996",
+        "type": "influxdb out",
+        "z": "4fa067ed3d4cde85",
+        "influxdb": "ea5fd531cab21ad5",
+        "name": "Save Panel 2",
+        "measurement": "Battery2",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "IOT_DEMO2",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 990,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "d25957154861f5a9",
+        "type": "influxdb out",
+        "z": "4fa067ed3d4cde85",
+        "influxdb": "ea5fd531cab21ad5",
+        "name": "Save Panel 3",
+        "measurement": "Battery3",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "IOT_DEMO2",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 990,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "a2a25c7b4e4b7039",
+        "type": "influxdb out",
+        "z": "4fa067ed3d4cde85",
+        "influxdb": "ea5fd531cab21ad5",
+        "name": "Save Panel 4",
+        "measurement": "Battery4",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "IOT_DEMO2",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 990,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "513822482887f395",
+        "type": "influxdb out",
+        "z": "4fa067ed3d4cde85",
+        "influxdb": "ea5fd531cab21ad5",
+        "name": "Save Panel 5",
+        "measurement": "Battery5",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "IOT_DEMO2",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 990,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "f50f584f469e3d5c",
+        "type": "debug",
+        "z": "4fa067ed3d4cde85",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 990,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "a7ace1c19ed1c17f",
+        "type": "influxdb out",
+        "z": "4fa067ed3d4cde85",
+        "influxdb": "ea5fd531cab21ad5",
+        "name": "Save Aggregates",
+        "measurement": "Aggregates",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "IOT_DEMO2",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1010,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "97e7b365de25de88",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "116.255.18.215",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": ""
+    },
+    {
+        "id": "ea5fd531cab21ad5",
+        "type": "influxdb",
+        "hostname": "localhost",
+        "port": "8086",
+        "protocol": "http",
+        "database": "SOLAR_PANEL_PV_DATA",
+        "name": "",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "1.x",
+        "url": "http://localhost:8086",
+        "rejectUnauthorized": true
+    }
+]

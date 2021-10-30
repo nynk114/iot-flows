@@ -1,0 +1,772 @@
+[
+    {
+        "id": "43114e1dd048306e",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "27679233c30968a1",
+        "type": "function",
+        "z": "43114e1dd048306e",
+        "name": "dataAnalysis",
+        "func": "const panels = msg.payload;\nlet totalCurrent = 0;\nlet minCurrent = 0;\nlet maxCurrent = 0;\nlet totalCells = 0;\nlet totalAreaTemp = 0;\n\nlet standardDeviationMap = {};\nlet averageMap = {};\n//goes from arrays to single values at the end\n\nlet irregularPanels = [];\n\n// taken from https://stackoverflow.com/questions/7343890/standard-deviation-javascript\nfunction getStandardDeviation(array) {\n  const n = array.length;\n  const mean = array.reduce((a, b) => a + b) / n;\n  return Math.sqrt(\n    array.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n\n  );\n}\n\nfunction getMean(array) {\n  return array.reduce((a, b) => a + b) / array.length;\n}\n\nfor (const panel of panels) {\n  totalCurrent += panel.Current;\n  totalAreaTemp +=\n    panel.Area_Temp_1 +\n    panel.Area_Temp_2 +\n    panel.Area_Temp_3 +\n    panel.Area_Temp_4;\n  if (minCurrent === 0) {\n    minCurrent = panel.Current;\n  }\n  minCurrent = minCurrent < panel.Current ? minCurrent : panel.Current;\n  maxCurrent = maxCurrent > panel.Current ? maxCurrent : panel.Current;\n  for (let property in panel) {\n    if (standardDeviationMap.hasOwnProperty(property)) {\n      standardDeviationMap[property] = [\n        ...standardDeviationMap[property],\n        panel[property],\n      ];\n    } else {\n      standardDeviationMap[property] = [panel[property]];\n    }\n  }\n}\n//trim non actual data\ndelete standardDeviationMap[\"ID_Battery\"];\ndelete standardDeviationMap[\"ID_Battery_Type\"];\ndelete standardDeviationMap[\"Cell_balance\"];\ndelete standardDeviationMap[\"ID_Warning\"];\ndelete standardDeviationMap[\"GPS_Latitude\"];\ndelete standardDeviationMap[\"GPS_Longitude\"];\n\naverageMap = { ...standardDeviationMap };\n\nfor (let property in averageMap) {\n  averageMap[property] = getMean(averageMap[property])\n}\n\n//change to standard deviations\nfor (let property in standardDeviationMap) {\n  standardDeviationMap[property] = getStandardDeviation(\n    standardDeviationMap[property]\n  );\n}\n\nfor (const panel in panels) {\n  let isIrregular = false;\n  let irregularProperties = [];\n  for (const property in panel) {\n    if (standardDeviationMap.hasOwnProperty(property)) {\n      const belowTwoDevs =\n        panel[property] <\n        averageMap[property] - 2 * standardDeviationMap[property];\n      const aboveTwoDevs =\n        panel[property] >\n        averageMap[property] + 2 * standardDeviationMap[property];\n      if (belowTwoDevs || aboveTwoDevs) {\n        isIrregular = true;\n        irregularProperties.push(property);\n      }\n    }\n  }\n  if (isIrregular) {\n    irregularPanels.push({ ...panel, irregularProperties });\n  }\n}\nconsole.log(standardDeviationMap)\n\nconst averageCurrent = parseFloat(totalCurrent) / panels.length;\nconst netAreaTemp = parseFloat(totalAreaTemp) / (panels.length * 4);\n\nmsg.payload = {\n  panels: msg.payload,\n  aggregations: {\n    MinCurrent: minCurrent,\n    MaxCurrent: maxCurrent,\n    ...averageMap,\n  },\n  irregularPanels: irregularPanels,\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1150,
+        "y": 280,
+        "wires": [
+            [
+                "6504fccde9e4220f",
+                "81fb86ebb937a4b3"
+            ]
+        ]
+    },
+    {
+        "id": "7a61de6fe42512a0",
+        "type": "file in",
+        "z": "43114e1dd048306e",
+        "name": "Test",
+        "filename": "C:\\Users\\Jason\\Desktop\\csv_data_iot\\battery1.csv",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 350,
+        "y": 220,
+        "wires": [
+            [
+                "8e40ffead0b28c77"
+            ]
+        ]
+    },
+    {
+        "id": "5fb9f05350a7b2ea",
+        "type": "inject",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 220,
+        "wires": [
+            [
+                "7a61de6fe42512a0",
+                "386abad0c9f34c26",
+                "94f632fe553204fb",
+                "eae85b8489c64cbf",
+                "97578dc1b09f92e3",
+                "ae08fff5d6143ef4",
+                "946aa2fcaee9e38f",
+                "5d9b069a7b3edc78"
+            ]
+        ]
+    },
+    {
+        "id": "8e40ffead0b28c77",
+        "type": "delay",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "x": 560,
+        "y": 220,
+        "wires": [
+            [
+                "b2144e3c70daf341"
+            ]
+        ]
+    },
+    {
+        "id": "595dcd9c31c28f41",
+        "type": "aedes broker",
+        "z": "43114e1dd048306e",
+        "name": "PVPanel",
+        "mqtt_port": 1883,
+        "mqtt_ws_bind": "port",
+        "mqtt_ws_port": "",
+        "mqtt_ws_path": "",
+        "cert": "",
+        "key": "",
+        "certname": "",
+        "keyname": "",
+        "dburl": "",
+        "usetls": false,
+        "x": 140,
+        "y": 1000,
+        "wires": [
+            [
+                "d9137a68d1d928c5"
+            ]
+        ]
+    },
+    {
+        "id": "6504fccde9e4220f",
+        "type": "mqtt out",
+        "z": "43114e1dd048306e",
+        "name": "PVPanelName",
+        "topic": "PVPanel",
+        "qos": "2",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "65ed9e08a3074a7b",
+        "x": 1320,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "d9137a68d1d928c5",
+        "type": "debug",
+        "z": "43114e1dd048306e",
+        "name": "Broker",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 350,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "81fb86ebb937a4b3",
+        "type": "debug",
+        "z": "43114e1dd048306e",
+        "name": "Publisher",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1300,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "386abad0c9f34c26",
+        "type": "file in",
+        "z": "43114e1dd048306e",
+        "name": "Test",
+        "filename": "C:\\Users\\Jason\\Desktop\\csv_data_iot\\battery2.csv",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 350,
+        "y": 280,
+        "wires": [
+            [
+                "8ff7ba1cb138f7a8"
+            ]
+        ]
+    },
+    {
+        "id": "94f632fe553204fb",
+        "type": "file in",
+        "z": "43114e1dd048306e",
+        "name": "Test",
+        "filename": "C:\\Users\\Jason\\Desktop\\csv_data_iot\\battery3.csv",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 350,
+        "y": 360,
+        "wires": [
+            [
+                "bf8e5e1289f2a521"
+            ]
+        ]
+    },
+    {
+        "id": "8ff7ba1cb138f7a8",
+        "type": "delay",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "x": 560,
+        "y": 280,
+        "wires": [
+            [
+                "ad0aa5289f214fcd"
+            ]
+        ]
+    },
+    {
+        "id": "bf8e5e1289f2a521",
+        "type": "delay",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "x": 560,
+        "y": 360,
+        "wires": [
+            [
+                "4c6f3918c77494ad"
+            ]
+        ]
+    },
+    {
+        "id": "90724bcb333b101e",
+        "type": "join",
+        "z": "43114e1dd048306e",
+        "name": "joiner",
+        "mode": "custom",
+        "build": "array",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "2",
+        "count": "8",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 950,
+        "y": 280,
+        "wires": [
+            [
+                "27679233c30968a1"
+            ]
+        ]
+    },
+    {
+        "id": "b2144e3c70daf341",
+        "type": "csv",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 740,
+        "y": 220,
+        "wires": [
+            [
+                "90724bcb333b101e"
+            ]
+        ]
+    },
+    {
+        "id": "ad0aa5289f214fcd",
+        "type": "csv",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 740,
+        "y": 280,
+        "wires": [
+            [
+                "90724bcb333b101e"
+            ]
+        ]
+    },
+    {
+        "id": "4c6f3918c77494ad",
+        "type": "csv",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 740,
+        "y": 360,
+        "wires": [
+            [
+                "90724bcb333b101e"
+            ]
+        ]
+    },
+    {
+        "id": "4ed1148dffd278d9",
+        "type": "mqtt in",
+        "z": "43114e1dd048306e",
+        "name": "test subscriber",
+        "topic": "PVPanel",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "65ed9e08a3074a7b",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "x": 180,
+        "y": 1140,
+        "wires": [
+            [
+                "5747db72df262d9a"
+            ]
+        ]
+    },
+    {
+        "id": "5747db72df262d9a",
+        "type": "json",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 330,
+        "y": 1140,
+        "wires": [
+            [
+                "c78b9e68349e75fe"
+            ]
+        ]
+    },
+    {
+        "id": "c78b9e68349e75fe",
+        "type": "debug",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 1140,
+        "wires": []
+    },
+    {
+        "id": "eae85b8489c64cbf",
+        "type": "file in",
+        "z": "43114e1dd048306e",
+        "name": "Test",
+        "filename": "C:\\Users\\Jason\\Desktop\\csv_data_iot\\battery4.csv",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 350,
+        "y": 440,
+        "wires": [
+            [
+                "112257587ddeeebd"
+            ]
+        ]
+    },
+    {
+        "id": "112257587ddeeebd",
+        "type": "delay",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "x": 560,
+        "y": 440,
+        "wires": [
+            [
+                "51faa9fb61edf957"
+            ]
+        ]
+    },
+    {
+        "id": "51faa9fb61edf957",
+        "type": "csv",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 740,
+        "y": 440,
+        "wires": [
+            [
+                "90724bcb333b101e"
+            ]
+        ]
+    },
+    {
+        "id": "97578dc1b09f92e3",
+        "type": "file in",
+        "z": "43114e1dd048306e",
+        "name": "Test",
+        "filename": "C:\\Users\\Jason\\Desktop\\csv_data_iot\\battery5.csv",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 350,
+        "y": 540,
+        "wires": [
+            [
+                "a7d5f6d417a5a47d"
+            ]
+        ]
+    },
+    {
+        "id": "a7d5f6d417a5a47d",
+        "type": "delay",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "x": 560,
+        "y": 540,
+        "wires": [
+            [
+                "54ce9f79dcaa89a4"
+            ]
+        ]
+    },
+    {
+        "id": "54ce9f79dcaa89a4",
+        "type": "csv",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 740,
+        "y": 540,
+        "wires": [
+            [
+                "90724bcb333b101e"
+            ]
+        ]
+    },
+    {
+        "id": "ae08fff5d6143ef4",
+        "type": "file in",
+        "z": "43114e1dd048306e",
+        "name": "Test",
+        "filename": "C:\\Users\\Jason\\Desktop\\csv_data_iot\\battery6.csv",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 350,
+        "y": 640,
+        "wires": [
+            [
+                "62e1e9728661c083"
+            ]
+        ]
+    },
+    {
+        "id": "62e1e9728661c083",
+        "type": "delay",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "x": 560,
+        "y": 640,
+        "wires": [
+            [
+                "525ef1fdc17f5367"
+            ]
+        ]
+    },
+    {
+        "id": "525ef1fdc17f5367",
+        "type": "csv",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 740,
+        "y": 640,
+        "wires": [
+            [
+                "90724bcb333b101e"
+            ]
+        ]
+    },
+    {
+        "id": "946aa2fcaee9e38f",
+        "type": "file in",
+        "z": "43114e1dd048306e",
+        "name": "Test",
+        "filename": "C:\\Users\\Jason\\Desktop\\csv_data_iot\\battery7.csv",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 350,
+        "y": 740,
+        "wires": [
+            [
+                "3bdcb3cfbdce4be2"
+            ]
+        ]
+    },
+    {
+        "id": "3bdcb3cfbdce4be2",
+        "type": "delay",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "x": 560,
+        "y": 740,
+        "wires": [
+            [
+                "da1784d32b4f1057"
+            ]
+        ]
+    },
+    {
+        "id": "da1784d32b4f1057",
+        "type": "csv",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 740,
+        "y": 740,
+        "wires": [
+            [
+                "90724bcb333b101e"
+            ]
+        ]
+    },
+    {
+        "id": "5d9b069a7b3edc78",
+        "type": "file in",
+        "z": "43114e1dd048306e",
+        "name": "Test",
+        "filename": "C:\\Users\\Jason\\Desktop\\csv_data_iot\\battery8.csv",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 350,
+        "y": 860,
+        "wires": [
+            [
+                "eee3fe023bbb43bf"
+            ]
+        ]
+    },
+    {
+        "id": "eee3fe023bbb43bf",
+        "type": "delay",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "x": 560,
+        "y": 860,
+        "wires": [
+            [
+                "f316cee7bd04f5f5"
+            ]
+        ]
+    },
+    {
+        "id": "f316cee7bd04f5f5",
+        "type": "csv",
+        "z": "43114e1dd048306e",
+        "name": "",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 740,
+        "y": 860,
+        "wires": [
+            [
+                "90724bcb333b101e"
+            ]
+        ]
+    },
+    {
+        "id": "65ed9e08a3074a7b",
+        "type": "mqtt-broker",
+        "name": "local",
+        "broker": "192.168.1.35",
+        "port": "1883",
+        "clientid": "test-client",
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "sensor",
+        "birthQos": "0",
+        "birthPayload": "hello",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": ""
+    }
+]
