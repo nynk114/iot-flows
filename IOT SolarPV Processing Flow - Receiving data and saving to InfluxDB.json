@@ -18,7 +18,7 @@
         "nl": false,
         "rap": true,
         "rh": 0,
-        "x": 140,
+        "x": 120,
         "y": 140,
         "wires": [
             [
@@ -42,10 +42,9 @@
                 "a4f69aaea0329850",
                 "788716dc1dac3ced",
                 "9d3f3f2d84fec975",
-                "7ff1befd5879201a",
                 "5844f59f290cc3ce",
                 "91070b9dcb6020d4",
-                "f50f584f469e3d5c"
+                "82e05e6c65d6cdcd"
             ]
         ]
     },
@@ -54,7 +53,7 @@
         "type": "debug",
         "z": "4fa067ed3d4cde85",
         "name": "",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -157,28 +156,9 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 580,
+        "x": 600,
         "y": 40,
         "wires": []
-    },
-    {
-        "id": "7ff1befd5879201a",
-        "type": "function",
-        "z": "4fa067ed3d4cde85",
-        "name": "Aggregate Data",
-        "func": "var i = 0;\nmsg.payload={\n    MinCurrent:parseFloat(msg.payload.aggregations.MinCurrent),\n    MaxCurrent:parseFloat(msg.payload.aggregations.MaxCurrent),\n    AverageCurrent:parseFloat(msg.payload.aggregations.Current),\n    MOS_Temperature:parseFloat(msg.payload.aggregations.MOS_Temp)\n    \n}\nreturn msg;\n",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 580,
-        "y": 160,
-        "wires": [
-            [
-                "a7ace1c19ed1c17f"
-            ]
-        ]
     },
     {
         "id": "5844f59f290cc3ce",
@@ -295,7 +275,7 @@
         "type": "debug",
         "z": "4fa067ed3d4cde85",
         "name": "",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -326,10 +306,30 @@
         "wires": []
     },
     {
+        "id": "82e05e6c65d6cdcd",
+        "type": "function",
+        "z": "4fa067ed3d4cde85",
+        "name": "Aggregate Data",
+        "func": "var i = 0;\nmsg.payload={\n    MinCurrent:parseFloat(msg.payload.aggregations.MinCurrent),\n    MaxCurrent:parseFloat(msg.payload.aggregations.MaxCurrent),\n    AverageCurrent:parseFloat(msg.payload.aggregations.Current),\n    NetAreaTemperature:parseFloat((msg.payload.aggregations.Area_Temp_1 + msg.payload.aggregations.Area_Temp_2 + msg.payload.aggregations.Area_Temp_3 + msg.payload.aggregations.Area_Temp_4) / 4)\n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 140,
+        "wires": [
+            [
+                "f50f584f469e3d5c",
+                "a7ace1c19ed1c17f"
+            ]
+        ]
+    },
+    {
         "id": "97e7b365de25de88",
         "type": "mqtt-broker",
         "name": "",
-        "broker": "116.255.18.215",
+        "broker": "202.65.68.179",
         "port": "1883",
         "clientid": "",
         "usetls": false,
